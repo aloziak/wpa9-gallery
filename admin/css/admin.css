@@ -1,0 +1,529 @@
+/* WPA9 Gallery — admin styles */
+
+.wpa9-wrap .wpa9-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    margin-top: 12px;
+}
+
+@media (max-width: 960px) {
+    .wpa9-wrap .wpa9-grid { grid-template-columns: 1fr; }
+}
+
+.wpa9-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px;
+}
+
+.wpa9-card h3 {
+    margin-top: 0;
+}
+
+/* Uploader */
+.wpa9-uploader {
+    border: 2px dashed #c3c4c7;
+    border-radius: 6px;
+    background: #fafafa;
+    padding: 24px;
+    margin: 16px 0;
+    transition: border-color .15s, background .15s;
+}
+
+.wpa9-uploader.is-dragover {
+    border-color: #2271b1;
+    background: #f0f6fc;
+}
+
+.wpa9-drop {
+    text-align: center;
+}
+
+.wpa9-drop__hint {
+    margin: 0 0 12px;
+    color: #50575e;
+}
+
+.wpa9-upload-queue {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+}
+
+.wpa9-upload-queue li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.wpa9-upload-queue .wpa9-progress {
+    flex: 1;
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.wpa9-upload-queue .wpa9-progress > span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #2271b1;
+    transition: width .2s linear;
+}
+
+.wpa9-upload-queue .wpa9-q-done .wpa9-progress > span { background: #00a32a; }
+.wpa9-upload-queue .wpa9-q-error                       { color: #b32d2e; }
+.wpa9-upload-queue .wpa9-q-error .wpa9-progress > span { background: #b32d2e; }
+
+/* Toolbar above grid */
+.wpa9-images-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 8px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+}
+
+.wpa9-toolbar-hint {
+    color: #646970;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+/* Bulk thumbnail regeneration progress */
+.wpa9-regen-progress[hidden] {
+    display: none;
+}
+
+.wpa9-regen-progress {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 16px;
+    padding: 16px 18px;
+    background: #f0f6fc;
+    border: 1px solid #2271b1;
+    border-left-width: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+
+.wpa9-regen-progress.is-done  { background: #edfaef; border-color: #00a32a; }
+.wpa9-regen-progress.is-error { background: #fcf0f1; border-color: #b32d2e; }
+
+.wpa9-regen-progress__icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #2271b1;
+    flex: 0 0 auto;
+}
+
+.wpa9-regen-progress.is-running .wpa9-regen-progress__icon {
+    animation: wpa9-spin 1.2s linear infinite;
+}
+
+.wpa9-regen-progress.is-done .wpa9-regen-progress__icon  { color: #00a32a; }
+.wpa9-regen-progress.is-error .wpa9-regen-progress__icon { color: #b32d2e; }
+
+.wpa9-regen-progress.is-done  .wpa9-regen-progress__icon::before { content: "\f147"; } /* yes/check */
+.wpa9-regen-progress.is-error .wpa9-regen-progress__icon::before { content: "\f534"; } /* warning */
+
+@keyframes wpa9-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.wpa9-regen-progress__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.wpa9-regen-progress__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wpa9-regen-progress.is-error .wpa9-regen-progress__label { color: #b32d2e; }
+.wpa9-regen-progress.is-done  .wpa9-regen-progress__label { color: #00450f; }
+
+.wpa9-regen-progress__bar {
+    height: 16px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.wpa9-regen-progress__bar > span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #2271b1;
+    transition: width .2s linear;
+}
+
+.wpa9-regen-progress.is-done  .wpa9-regen-progress__bar > span { background: #00a32a; }
+.wpa9-regen-progress.is-error .wpa9-regen-progress__bar > span { background: #b32d2e; }
+
+.wpa9-regen-progress__close {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: #646970;
+    line-height: 1;
+}
+
+.wpa9-regen-progress__close:hover { color: #1d2327; }
+
+/* Per-image size readout */
+.wpa9-image__size {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #646970;
+}
+
+.wpa9-image__size-val {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Image grid */
+.wpa9-images {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.wpa9-image {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.wpa9-image.is-selected {
+    outline: 2px solid #2271b1;
+    outline-offset: -2px;
+}
+
+.wpa9-image.ui-sortable-helper {
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    transform: rotate(1deg);
+}
+
+.wpa9-image__check {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(255,255,255,.9);
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.wpa9-image__thumb {
+    cursor: grab;
+    background: #f6f7f7;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.wpa9-image__thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+.wpa9-image__meta {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.wpa9-image__meta input,
+.wpa9-image__meta textarea {
+    font-size: 12px;
+    padding: 4px 6px;
+}
+
+.wpa9-image__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: #646970;
+    flex-wrap: wrap;
+}
+
+.wpa9-image__actions .button-link.delete { color: #b32d2e; }
+.wpa9-image__actions .wpa9-status        { margin-left: auto; color: #2271b1; }
+
+.wpa9-empty {
+    color: #646970;
+    font-style: italic;
+    padding: 16px;
+}
+
+/* Sortable placeholder */
+.wpa9-placeholder {
+    background: repeating-linear-gradient(45deg, #f6f7f7, #f6f7f7 8px, #fff 8px, #fff 16px);
+    border: 1px dashed #c3c4c7;
+    border-radius: 6px;
+    visibility: visible !important;
+}
+
+/* --- Album membership (drag & drop) --- */
+.wpa9-membership {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 12px;
+    position: relative;
+}
+
+@media (max-width: 782px) {
+    .wpa9-membership {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wpa9-membership__col {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+}
+
+.wpa9-membership__col h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #50575e;
+    border-bottom: 1px solid #f0f0f1;
+    padding-bottom: 8px;
+}
+
+.wpa9-membership__count {
+    font-weight: normal;
+    color: #646970;
+    letter-spacing: 0;
+    text-transform: none;
+    margin-left: 6px;
+}
+
+.wpa9-membership__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 60px;
+    flex: 1;
+}
+
+.wpa9-membership__list:empty::after {
+    content: attr(data-empty);
+    display: block;
+    color: #a7aaad;
+    font-style: italic;
+    text-align: center;
+    padding: 16px 8px;
+    border: 1px dashed #dcdcde;
+    border-radius: 4px;
+}
+
+.wpa9-membership__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    padding: 6px 10px;
+    margin: 0 0 6px;
+    cursor: grab;
+    transition: background .12s, border-color .12s;
+}
+
+.wpa9-membership__item:hover {
+    background: #fff;
+    border-color: #2271b1;
+}
+
+.wpa9-membership__item.ui-sortable-helper {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    cursor: grabbing;
+}
+
+.wpa9-membership__handle {
+    color: #646970;
+    flex-shrink: 0;
+}
+
+.wpa9-membership__name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.wpa9-membership__meta {
+    color: #646970;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.wpa9-membership__placeholder {
+    background: repeating-linear-gradient(45deg, #f6f7f7, #f6f7f7 8px, #fff 8px, #fff 16px);
+    border: 1px dashed #2271b1;
+    border-radius: 3px;
+    visibility: visible !important;
+    margin: 0 0 6px;
+    height: 36px;
+}
+
+.wpa9-membership__status {
+    position: absolute;
+    top: -28px;
+    right: 0;
+    font-size: 12px;
+    color: #2271b1;
+    min-height: 18px;
+}
+
+.wpa9-membership__status.is-error {
+    color: #b32d2e;
+}
+
+/* View-mode toggle */
+.wpa9-view-toggle {
+    display: inline-flex;
+    gap: 0;
+}
+
+.wpa9-view-toggle .button {
+    padding: 0 8px;
+    min-height: 30px;
+    line-height: 28px;
+}
+
+.wpa9-view-toggle .button + .button {
+    margin-left: -1px;
+}
+
+.wpa9-view-toggle .button.is-active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    z-index: 1;
+}
+
+.wpa9-view-toggle .dashicons {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 28px;
+}
+
+/* --- List mode ---
+ * .wpa9-image__meta uses display: contents so its 4 children (caption, alt,
+ * description, actions) become direct grid items of the row.
+ */
+.wpa9-images.is-list {
+    display: block;
+}
+
+.wpa9-images.is-list .wpa9-image {
+    display: grid;
+    grid-template-columns: 28px 80px minmax(120px, 1fr) minmax(120px, 1fr) minmax(150px, 1.5fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 10px 6px 6px;
+    margin: 0 0 4px;
+    border-radius: 0;
+    overflow: visible;
+}
+
+.wpa9-images.is-list .wpa9-image__check {
+    position: static;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wpa9-images.is-list .wpa9-image__thumb {
+    width: 80px;
+    aspect-ratio: 1 / 1;
+}
+
+.wpa9-images.is-list .wpa9-image__meta {
+    display: contents;
+}
+
+.wpa9-images.is-list .wpa9-image__meta textarea {
+    min-height: 40px;
+    resize: vertical;
+}
+
+.wpa9-images.is-list .wpa9-image__actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 11px;
+}
+
+.wpa9-images.is-list .wpa9-image__actions .wpa9-status {
+    margin-left: 0;
+}
+
+/* Narrow screens — collapse the inline-row layout back to a stacked card */
+@media (max-width: 900px) {
+    .wpa9-images.is-list .wpa9-image {
+        grid-template-columns: 28px 70px 1fr;
+    }
+    .wpa9-images.is-list .wpa9-image__meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        grid-column: 3 / 4;
+    }
+    .wpa9-images.is-list .wpa9-image__actions {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+}

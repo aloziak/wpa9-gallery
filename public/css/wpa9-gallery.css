@@ -1,0 +1,263 @@
+/*
+ * WPA9 Gallery — public stylesheet
+ *
+ * Standalone, no dependencies. Uses CSS columns for masonry (no JS required).
+ * Customize by overriding these classes in your theme.
+ */
+
+.wpa9-gallery {
+    --wpa9-cols: 5;
+    --wpa9-gap: 12px;
+    --wpa9-radius: 0px;
+    --wpa9-text: #1d2327;
+    --wpa9-muted: #646970;
+    --wpa9-bg: transparent;
+
+    margin: 0 0 2em;
+    color: var(--wpa9-text);
+    background: var(--wpa9-bg);
+}
+
+.wpa9-gallery__header {
+    margin-bottom: 1em;
+}
+
+.wpa9-gallery__title {
+    font-size: 1.6em;
+    line-height: 1.2;
+    margin: 0 0 .25em;
+}
+
+.wpa9-gallery__desc {
+    margin: 0 0 .25em;
+    color: var(--wpa9-muted);
+}
+
+.wpa9-gallery__author {
+    font-size: .9em;
+    color: var(--wpa9-muted);
+    margin: 0;
+}
+
+.wpa9-gallery__author span {
+    color: var(--wpa9-text);
+    font-weight: 600;
+}
+
+.wpa9-gallery__empty {
+    color: var(--wpa9-muted);
+    font-style: italic;
+}
+
+/* --- Masonry (CSS columns) --- */
+.wpa9-masonry {
+    column-count: var(--wpa9-cols);
+    column-gap: var(--wpa9-gap);
+}
+
+.wpa9-masonry__item {
+    break-inside: avoid;
+    margin: 0 0 var(--wpa9-gap);
+    padding: 0;
+    display: block;
+    border-radius: 0;
+    overflow: hidden;
+    background: #fff;
+}
+
+.wpa9-masonry__link {
+    display: block;
+    line-height: 0;
+    text-decoration: none;
+    height: 100%;
+    
+}
+
+.wpa9-masonry__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform .25s ease, opacity .25s ease;
+    border-radius: var(--wpa9-radius, 0px);
+}
+
+.wpa9-masonry__item:hover .wpa9-masonry__img {
+    /* transform: scale(1.02); */
+    opacity: .8;
+}
+
+.wpa9-masonry__caption {
+    font-size: .85em;
+    color: var(--wpa9-muted);
+    padding: .5em .75em;
+    background: #fff;
+    line-height: 1.35;
+}
+
+/* --- Responsive column counts --- */
+@media (max-width: 1024px) {
+    .wpa9-masonry { column-count: max(2, calc(var(--wpa9-cols) - 1)); }
+}
+
+@media (max-width: 640px) {
+    .wpa9-masonry { column-count: 2; }
+}
+
+@media (max-width: 380px) {
+    .wpa9-masonry { column-count: 1; }
+}
+
+/* --- Aspect-ratio classes ---
+ * Applied as a second class on the figure (or .gallery-item in native template),
+ * e.g. <figure class="wpa9-masonry__item r3x2">. The image inside fills the box
+ * with object-fit: cover. When no ratio class is present, the image keeps its
+ * natural proportions (handled by .wpa9-masonry__img above and theme CSS on the
+ * native template).
+ */
+.r3x2,
+.r4x3,
+.r16x9,
+.r16x10,
+.r21x9,
+.r1x1 {
+    position: relative;
+    width: 100%;
+}
+
+.r3x2 img,
+.r4x3 img,
+.r16x9 img,
+.r16x10 img,
+.r21x9 img,
+.r1x1 img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: center;
+}
+
+.r3x2   { aspect-ratio: 3 / 2; }
+.r4x3   { aspect-ratio: 4 / 3; }
+.r16x9  { aspect-ratio: 16 / 9; }
+.r16x10 { aspect-ratio: 16 / 10; }
+.r21x9  { aspect-ratio: 2.39 / 1; }
+.r1x1   { aspect-ratio: 1 / 1; }
+
+/* --- Album wrapper --- */
+.wpa9-album {
+    --wpa9-cols: 4;
+    --wpa9-gap: 12px;
+    margin: 0 0 2em;
+    color: var(--wpa9-text);
+}
+
+.wpa9-album__header {
+    margin-bottom: 1em;
+}
+
+.wpa9-album__title {
+    font-size: 1.8em;
+    margin: 0 0 .25em;
+}
+
+.wpa9-album__desc {
+    color: var(--wpa9-muted);
+    margin: 0 0 1em;
+}
+
+.wpa9-album__empty {
+    color: var(--wpa9-muted);
+    font-style: italic;
+}
+
+/* Album grid: one cover per gallery, click to open */
+.wpa9-album__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--wpa9-cols), 1fr);
+    gap: var(--wpa9-gap);
+}
+
+.wpa9-album__item {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.wpa9-album__item:hover {
+    /* transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .08); */
+}
+
+    .wpa9-album__item:hover .wpa9-album__cover {
+        opacity: .8;
+    }
+
+.wpa9-album__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    line-height: 0;
+}
+
+.wpa9-album__cover {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    object-position: center;
+    border-radius: var(--wpa9-radius, 0px);
+}
+
+.wpa9-album__cover--empty {
+    background: #f0f0f1;
+}
+
+.wpa9-album__caption {
+    line-height: 1.35;
+    padding: .6em .8em;
+    display: flex;
+    flex-direction: column;
+    gap: .15em;
+}
+
+.wpa9-album__name {
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.wpa9-album__count {
+    font-size: .85em;
+    color: var(--wpa9-muted);
+}
+
+@media (max-width: 1024px) {
+    .wpa9-album__grid { grid-template-columns: repeat(max(2, calc(var(--wpa9-cols) - 1)), 1fr); }
+}
+
+@media (max-width: 640px) {
+    .wpa9-album__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 380px) {
+    .wpa9-album__grid { grid-template-columns: 1fr; }
+}
+
+/* Drill-down (single gallery view from an album) */
+.wpa9-album-drill__back {
+    margin: 0 0 1em;
+    font-size: .9em;
+}
+
+.wpa9-album-drill__back a {
+    text-decoration: none;
+    color: var(--wpa9-muted);
+}
+
+.wpa9-album-drill__back a:hover {
+    color: var(--wpa9-text);
+}
