@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WPA9_VERSION', '1.0.0' );
+define( 'WPA9_VERSION', '1.3.0' );
 define( 'WPA9_FILE', __FILE__ );
 define( 'WPA9_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPA9_URL', plugin_dir_url( __FILE__ ) );
