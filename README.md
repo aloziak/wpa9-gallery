@@ -1,8 +1,8 @@
 === WPA9 Gallery ===
 Contributors: wpa9
 Tags: gallery, album, masonry, images
-Requires at least: 5.5
-Tested up to: 6.5
+Requires at least: 6.5
+Tested up to: 7.0
 Requires PHP: 7.2
 Stable tag: 1.3.0
 License: GPLv2 or later

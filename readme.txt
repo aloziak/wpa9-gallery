@@ -1,10 +1,10 @@
 === WPA9 Gallery ===
 Contributors: wpa9
 Tags: gallery, album, masonry, images
-Requires at least: 5.5
-Tested up to: 6.5
+Requires at least: 6.5
+Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.0.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 
 A lightweight gallery & album manager. Stores files outside the Media Library and ships with a theme-overridable masonry template.
@@ -50,6 +50,16 @@ Helper static methods:
 2. Open *WPA9 Gallery* in the admin menu, create a gallery, then upload images.
 
 == Changelog ==
+
+= 1.3.0 =
+Fixed hard crop features on regenrate thumbnails.
+Add Dashboard.
+
+= 1.2.0 =
+Add export/import option.
+
+= 1.1.0 =
+Add import from NextGen feature.
 
 = 1.0.0 =
 Initial release.

@@ -53,9 +53,32 @@ class WPA9_Ajax {
         $filename   = WPA9_Storage::unique_filename( $gallery->slug, $file['name'] );
         $target     = trailingslashit( $target_dir ) . $filename;
 
-        if ( ! @move_uploaded_file( $file['tmp_name'], $target ) ) {
-            wp_send_json_error( array( 'message' => __( 'Failed to move uploaded file.', 'wpa9-gallery' ) ), 500 );
+        if ( ! is_uploaded_file( $file['tmp_name'] ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Invalid uploaded file.', 'wpa9-gallery' ),
+                ),
+                400
+            );
         }
+
+        // Some environments disallow move_uploaded_file; use copy() then unlink().
+        if ( ! copy( $file['tmp_name'], $target ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => sprintf(
+                        __( 'Failed to move uploaded file to %s.', 'wpa9-gallery' ),
+                        basename( $target )
+                    ),
+                ),
+                500
+            );
+        }
+        // Remove the temporary uploaded file if it still exists.
+        if ( file_exists( $file['tmp_name'] ) ) {
+            @unlink( $file['tmp_name'] );
+        }
+
         @chmod( $target, 0644 );
 
         $settings = WPA9_Install::get_settings();
