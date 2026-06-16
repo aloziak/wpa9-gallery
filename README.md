@@ -11,6 +11,8 @@ A lightweight gallery & album manager. Stores files outside the Media Library an
 
 == Description ==
 
+The WPA9 Gallery plugin is a lightweight and simple solution for managing galleries. If you’re looking for a quick and easy plugin to manage your galleries, WPA9 Gallery is a good choice. The plugin stores photos in a separate directory. Photos are stored outside the default WordPress Media Library. The plugin is currently in development; use it at your own risk. We welcome your feedback. Our goal is to create a stable, secure, simple, fast, and functional tool for managing galleries in WordPress. 
+
 Storage location: `wp-content/uploads/wpa9-galleries/{gallery-slug}/`
 Thumbnails: `wp-content/uploads/wpa9-galleries/{gallery-slug}/thumbs/`
 
