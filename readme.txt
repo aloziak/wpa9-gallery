@@ -1,5 +1,5 @@
 === WPA9 Gallery ===
-Contributors: wpa9
+Contributors: aloziak
 Tags: gallery, album, masonry, images
 Requires at least: 6.5
 Tested up to: 7.0
