@@ -527,3 +527,32 @@
         gap: 10px;
     }
 }
+
+/* JSON import dropzone */
+.wpa9-upload-zone {
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 2em;
+    text-align: center;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+
+.wpa9-upload-zone.is-dragover {
+    border-color: #2271b1;
+    background: #f0f6fc;
+}
+
+.wpa9-upload-zone__hint {
+    margin: 0 0 1em;
+}
+
+.wpa9-file-selected {
+    margin-top: 1em;
+    color: #00a32a;
+}
+
+.wpa9-preview-btn {
+    margin-top: 1.5em;
+}

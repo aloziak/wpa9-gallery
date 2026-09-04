@@ -1,10 +1,10 @@
 === WPA9 Gallery ===
-Contributors: wpa9
+Contributors: aloziak
 Tags: gallery, album, masonry, images
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 
 A lightweight gallery & album manager. Stores files outside the Media Library and ships with a theme-overridable masonry template.
@@ -19,7 +19,7 @@ Thumbnails: `wp-content/uploads/wpa9-galleries/{gallery-slug}/thumbs/`
 Features:
 
 * Galleries with name, description, photo gallery author, custom thumb size, album assignment
-* Albums (name, short description) — galleries can belong to one album
+* Albums (name, short description) — galleries can belong to multiple albums
 * Per-image caption, alt text, description
 * Drag-to-reorder
 * Bulk select & delete (incl. "select all")
@@ -53,8 +53,11 @@ Helper static methods:
 
 == Changelog ==
 
+= 1.3.1 =
+WordPress.org review compliance: enqueue, sanitization, prepared SQL, menu position, uploads index file.
+
 = 1.3.0 =
-Fixed hard crop features on regenrate thumbnails.
+Fixed hard crop on regenerate thumbnails.
 Add Dashboard.
 
 = 1.2.0 =

@@ -32,8 +32,14 @@ $data_html  = isset( $data_html ) ? $data_html : '';
         <?php if ( ! empty( $gallery->author_name ) ) : ?>
             <p class="wpa9-gallery__author">
                 <?php
-                /* translators: %s: author name */
-                printf( esc_html__( 'Photos by %s', 'wpa9-gallery' ), '<span>' . esc_html( $gallery->author_name ) . '</span>' );
+                echo wp_kses(
+                    sprintf(
+                        /* translators: %s: author name */
+                        __( 'Photos by <span>%s</span>', 'wpa9-gallery' ),
+                        esc_html( $gallery->author_name )
+                    ),
+                    array( 'span' => array() )
+                );
                 ?>
             </p>
         <?php endif; ?>

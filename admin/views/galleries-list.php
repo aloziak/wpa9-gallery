@@ -40,7 +40,7 @@ foreach ( $albums as $a ) {
                     <div class="row-actions">
                         <span class="edit"><a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Edit', 'wpa9-gallery' ); ?></a> | </span>
                         <span class="trash">
-                            <form method="post" style="display:inline;" onsubmit="return confirm('<?php echo esc_js( __( 'Delete this gallery and all its images? This cannot be undone.', 'wpa9-gallery' ) ); ?>');">
+                            <form method="post" style="display:inline;" data-wpa9-confirm="<?php echo esc_attr( __( 'Delete this gallery and all its images? This cannot be undone.', 'wpa9-gallery' ) ); ?>">
                                 <?php wp_nonce_field( 'wpa9_delete_gallery' ); ?>
                                 <input type="hidden" name="wpa9_action" value="delete_gallery">
                                 <input type="hidden" name="id" value="<?php echo (int) $g->id; ?>">

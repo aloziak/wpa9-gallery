@@ -33,7 +33,7 @@ $albums = WPA9_Album::all();
                         <div class="row-actions">
                             <span class="edit"><a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Edit', 'wpa9-gallery' ); ?></a> | </span>
                             <span class="trash">
-                                <form method="post" style="display:inline;" onsubmit="return confirm('<?php echo esc_js( __( 'Delete this album? Galleries inside it will be detached, not deleted.', 'wpa9-gallery' ) ); ?>');">
+                                <form method="post" style="display:inline;" data-wpa9-confirm="<?php echo esc_attr( __( 'Delete this album? Galleries inside it will be detached, not deleted.', 'wpa9-gallery' ) ); ?>">
                                     <?php wp_nonce_field( 'wpa9_delete_album' ); ?>
                                     <input type="hidden" name="wpa9_action" value="delete_album">
                                     <input type="hidden" name="id" value="<?php echo (int) $a->id; ?>">

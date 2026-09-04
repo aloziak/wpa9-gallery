@@ -17,22 +17,30 @@ class WPA9_Exporter {
             'images'           => array(),
         );
 
-        $galleries = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wpa9_galleries ORDER BY id" );
+        $galleries = $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY id', $wpdb->prefix . 'wpa9_galleries' )
+        );
         foreach ( $galleries as $gallery ) {
             $export['galleries'][] = (array) $gallery;
         }
 
-        $albums = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wpa9_albums ORDER BY id" );
+        $albums = $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY id', $wpdb->prefix . 'wpa9_albums' )
+        );
         foreach ( $albums as $album ) {
             $export['albums'][] = (array) $album;
         }
 
-        $album_galleries = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wpa9_album_galleries ORDER BY album_id, sort_order" );
+        $album_galleries = $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY album_id, sort_order', $wpdb->prefix . 'wpa9_album_galleries' )
+        );
         foreach ( $album_galleries as $ag ) {
             $export['album_galleries'][] = (array) $ag;
         }
 
-        $images = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wpa9_images ORDER BY gallery_id, sort_order" );
+        $images = $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY gallery_id, sort_order', $wpdb->prefix . 'wpa9_images' )
+        );
         foreach ( $images as $image ) {
             $export['images'][] = (array) $image;
         }

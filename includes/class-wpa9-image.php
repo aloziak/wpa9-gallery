@@ -12,21 +12,32 @@ class WPA9_Image {
 
     public static function get( $id ) {
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::table() . " WHERE id = %d", (int) $id ) );
+        return $wpdb->get_row(
+            $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', self::table(), (int) $id )
+        );
     }
 
     public static function for_gallery( $gallery_id ) {
         global $wpdb;
         return $wpdb->get_results( $wpdb->prepare(
-            "SELECT * FROM " . self::table() . " WHERE gallery_id = %d ORDER BY sort_order ASC, id ASC",
+            'SELECT * FROM %i WHERE gallery_id = %d ORDER BY sort_order ASC, id ASC',
+            self::table(),
             (int) $gallery_id
         ) );
+    }
+
+    public static function count_all() {
+        global $wpdb;
+        return (int) $wpdb->get_var(
+            $wpdb->prepare( 'SELECT COUNT(*) FROM %i', self::table() )
+        );
     }
 
     public static function next_sort_order( $gallery_id ) {
         global $wpdb;
         $max = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT MAX(sort_order) FROM " . self::table() . " WHERE gallery_id = %d",
+            'SELECT MAX(sort_order) FROM %i WHERE gallery_id = %d',
+            self::table(),
             (int) $gallery_id
         ) );
         return $max + 1;

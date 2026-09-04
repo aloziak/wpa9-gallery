@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$id     = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
+$id     = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
 $album  = $id ? WPA9_Album::get( $id ) : null;
 $is_new = ! $album;
 

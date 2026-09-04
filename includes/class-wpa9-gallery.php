@@ -16,14 +16,18 @@ class WPA9_Gallery {
         if ( $album_id !== null && $album_id !== '' ) {
             $j = $wpdb->prefix . 'wpa9_album_galleries';
             return $wpdb->get_results( $wpdb->prepare(
-                "SELECT g.* FROM $tbl g
-                 INNER JOIN $j j ON j.gallery_id = g.id
+                'SELECT g.* FROM %i g
+                 INNER JOIN %i j ON j.gallery_id = g.id
                  WHERE j.album_id = %d
-                 ORDER BY j.sort_order ASC, g.name ASC",
+                 ORDER BY j.sort_order ASC, g.name ASC',
+                $tbl,
+                $j,
                 (int) $album_id
             ) );
         }
-        return $wpdb->get_results( "SELECT * FROM $tbl ORDER BY sort_order ASC, name ASC" );
+        return $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY sort_order ASC, name ASC', $tbl )
+        );
     }
 
     /** @return int[] album IDs this gallery belongs to. */
@@ -31,7 +35,8 @@ class WPA9_Gallery {
         global $wpdb;
         $j = $wpdb->prefix . 'wpa9_album_galleries';
         $rows = $wpdb->get_col( $wpdb->prepare(
-            "SELECT album_id FROM $j WHERE gallery_id = %d ORDER BY album_id ASC",
+            'SELECT album_id FROM %i WHERE gallery_id = %d ORDER BY album_id ASC',
+            $j,
             (int) $gallery_id
         ) );
         return array_map( 'intval', (array) $rows );
@@ -39,12 +44,16 @@ class WPA9_Gallery {
 
     public static function get( $id ) {
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::table() . " WHERE id = %d", (int) $id ) );
+        return $wpdb->get_row(
+            $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', self::table(), (int) $id )
+        );
     }
 
     public static function get_by_slug( $slug ) {
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::table() . " WHERE slug = %s", $slug ) );
+        return $wpdb->get_row(
+            $wpdb->prepare( 'SELECT * FROM %i WHERE slug = %s', self::table(), $slug )
+        );
     }
 
     public static function insert( $data ) {
@@ -133,8 +142,10 @@ class WPA9_Gallery {
         $i    = 2;
         while ( true ) {
             $existing = $wpdb->get_var( $wpdb->prepare(
-                "SELECT id FROM " . self::table() . " WHERE slug = %s AND id <> %d LIMIT 1",
-                $slug, (int) $exclude_id
+                'SELECT id FROM %i WHERE slug = %s AND id <> %d LIMIT 1',
+                self::table(),
+                $slug,
+                (int) $exclude_id
             ) );
             if ( ! $existing ) {
                 return $slug;
@@ -234,7 +245,8 @@ class WPA9_Gallery {
     public static function image_count( $gallery_id ) {
         global $wpdb;
         return (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM " . $wpdb->prefix . "wpa9_images WHERE gallery_id = %d",
+            'SELECT COUNT(*) FROM %i WHERE gallery_id = %d',
+            $wpdb->prefix . 'wpa9_images',
             (int) $gallery_id
         ) );
     }

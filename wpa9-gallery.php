@@ -3,7 +3,7 @@
  * Plugin Name: WPA9 Gallery
  * Plugin URI:  https://apollo1.cz/
  * Description: Lightweight gallery & album manager. Stores files outside the Media Library at wp-content/uploads/wpa9-galleries/. Ships with a theme-overridable masonry template.
- * Version:     1.3.0
+ * Version:     1.3.1
  * Author:      Aleš Loziak
  * License:     GPL-2.0-or-later
  * Text Domain: wpa9-gallery
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WPA9_VERSION', '1.3.0' );
+define( 'WPA9_VERSION', '1.3.1' );
 define( 'WPA9_FILE', __FILE__ );
 define( 'WPA9_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPA9_URL', plugin_dir_url( __FILE__ ) );
@@ -42,8 +42,6 @@ register_deactivation_hook( __FILE__, array( 'WPA9_Install', 'deactivate' ) );
 
 add_action( 'plugins_loaded', 'wpa9_init' );
 function wpa9_init() {
-    load_plugin_textdomain( 'wpa9-gallery', false, dirname( WPA9_BASENAME ) . '/languages' );
-
     WPA9_Install::maybe_upgrade();
     new WPA9_Shortcode();
     new WPA9_Ajax();

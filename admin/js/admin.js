@@ -11,6 +11,8 @@
         initRowActions();
         initViewToggle();
         initAlbumMembership();
+        initSelectOnFocus();
+        initConfirmForms();
     });
 
     function initUploader() {
@@ -448,5 +450,19 @@
     function setImageSize($item, w, h) {
         if (!w || !h) return;
         $item.find('.wpa9-image__size-val').text(w + ' × ' + h + ' px');
+    }
+
+    function initSelectOnFocus() {
+        $(document).on('focus click', '.wpa9-select-on-focus', function () {
+            this.select();
+        });
+    }
+
+    function initConfirmForms() {
+        $(document).on('submit', 'form[data-wpa9-confirm]', function (e) {
+            if (!window.confirm($(this).attr('data-wpa9-confirm'))) {
+                e.preventDefault();
+            }
+        });
     }
 })(jQuery);

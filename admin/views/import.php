@@ -7,7 +7,7 @@ $available = class_exists( 'WPA9_Importer_NextGEN' ) && WPA9_Importer_NextGEN::i
 $preview   = $available ? WPA9_Importer_NextGEN::preview() : null;
 
 $result = null;
-if ( ! empty( $_GET['imported'] ) ) {
+if ( isset( $_GET['imported'] ) && absint( wp_unslash( $_GET['imported'] ) ) ) {
     $transient_key = 'wpa9_import_result_' . get_current_user_id();
     $stored        = get_transient( $transient_key );
     if ( is_array( $stored ) ) {
@@ -51,7 +51,7 @@ if ( ! empty( $_GET['imported'] ) ) {
             </ul>
         </div>
 
-        <form method="post" onsubmit="return confirm('<?php echo esc_js( __( 'Run NextGEN import now?', 'wpa9-gallery' ) ); ?>');">
+        <form method="post" data-wpa9-confirm="<?php echo esc_attr( __( 'Run NextGEN import now?', 'wpa9-gallery' ) ); ?>">
             <?php wp_nonce_field( 'wpa9_import_nextgen' ); ?>
             <input type="hidden" name="wpa9_action" value="import_nextgen">
             <p><button type="submit" class="button button-primary"><?php esc_html_e( 'Import from NextGEN', 'wpa9-gallery' ); ?></button></p>

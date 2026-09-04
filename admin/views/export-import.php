@@ -5,12 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $galleries_count = count( WPA9_Gallery::all() );
 $albums_count    = count( WPA9_Album::all() );
-$images          = WPA9_Image::for_gallery( null );
-$images_count    = count( $images );
+$images_count    = WPA9_Image::count_all();
 
 $pending_import = null;
-if ( isset( $_GET['pending_import'] ) ) {
-    $transient_key = 'wpa9_pending_import_' . sanitize_key( $_GET['pending_import'] );
+$pending_key    = isset( $_GET['pending_import'] ) ? sanitize_text_field( wp_unslash( $_GET['pending_import'] ) ) : '';
+if ( $pending_key !== '' ) {
+    $transient_key = 'wpa9_pending_import_' . sanitize_key( $pending_key );
     $pending_import = get_transient( $transient_key );
     if ( ! $pending_import ) {
         echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'Import session expired. Please upload the file again.', 'wpa9-gallery' ) . '</p></div>';
@@ -89,7 +89,7 @@ if ( isset( $_GET['pending_import'] ) ) {
                     <form method="post" style="margin-top: 1.5em;">
                         <?php wp_nonce_field( 'wpa9_confirm_import_wpa9' ); ?>
                         <input type="hidden" name="wpa9_action" value="confirm_import_wpa9">
-                        <input type="hidden" name="pending_import" value="<?php echo esc_attr( $_GET['pending_import'] ); ?>">
+                        <input type="hidden" name="pending_import" value="<?php echo esc_attr( $pending_key ); ?>">
                         <label style="display: flex; align-items: center; margin-bottom: 1em;">
                             <input type="checkbox" name="confirm_import" required>
                             <span style="margin-left: 0.5em;"><?php esc_html_e( 'I understand this will create new galleries and albums', 'wpa9-gallery' ); ?></span>
@@ -106,66 +106,22 @@ if ( isset( $_GET['pending_import'] ) ) {
                         <?php wp_nonce_field( 'wpa9_import_wpa9' ); ?>
                         <input type="hidden" name="wpa9_action" value="import_wpa9">
 
-                        <div class="wpa9-upload-zone" id="wpa9-import-dropzone" style="border: 2px dashed #ccc; border-radius: 4px; padding: 2em; text-align: center; background: #f9f9f9; cursor: pointer; transition: all 0.3s;">
-                            <p style="margin: 0 0 1em 0;">
+                        <div class="wpa9-upload-zone" id="wpa9-import-dropzone">
+                            <p class="wpa9-upload-zone__hint">
                                 <strong><?php esc_html_e( 'Drag JSON file here or click to browse', 'wpa9-gallery' ); ?></strong>
                             </p>
                             <input type="file" name="import_file" id="wpa9-import-file" accept=".json" style="display: none;">
                             <p class="description"><?php esc_html_e( 'Max file size: 10 MB', 'wpa9-gallery' ); ?></p>
                         </div>
 
-                        <p id="wpa9-file-selected" style="margin-top: 1em; display: none; color: #00a32a;">
+                        <p id="wpa9-file-selected" class="wpa9-file-selected" hidden>
                             ✓ <span id="wpa9-filename"></span>
                         </p>
 
-                        <button type="submit" class="button button-primary" style="margin-top: 1.5em;" id="wpa9-preview-btn" disabled>
+                        <button type="submit" class="button button-primary wpa9-preview-btn" id="wpa9-preview-btn" disabled>
                             <?php esc_html_e( 'Preview Import', 'wpa9-gallery' ); ?>
                         </button>
                     </form>
-
-                    <script>
-                    (function() {
-                        const dropzone = document.getElementById('wpa9-import-dropzone');
-                        const fileInput = document.getElementById('wpa9-import-file');
-                        const selectedInfo = document.getElementById('wpa9-file-selected');
-                        const filenameSpan = document.getElementById('wpa9-filename');
-                        const previewBtn = document.getElementById('wpa9-preview-btn');
-
-                        dropzone.addEventListener('click', () => fileInput.click());
-
-                        dropzone.addEventListener('dragover', (e) => {
-                            e.preventDefault();
-                            dropzone.style.borderColor = '#0073aa';
-                            dropzone.style.backgroundColor = '#f0f6fc';
-                        });
-
-                        dropzone.addEventListener('dragleave', () => {
-                            dropzone.style.borderColor = '#ccc';
-                            dropzone.style.backgroundColor = '#f9f9f9';
-                        });
-
-                        dropzone.addEventListener('drop', (e) => {
-                            e.preventDefault();
-                            dropzone.style.borderColor = '#ccc';
-                            dropzone.style.backgroundColor = '#f9f9f9';
-                            fileInput.files = e.dataTransfer.files;
-                            updateFileSelected();
-                        });
-
-                        fileInput.addEventListener('change', updateFileSelected);
-
-                        function updateFileSelected() {
-                            if (fileInput.files.length > 0) {
-                                filenameSpan.textContent = fileInput.files[0].name;
-                                selectedInfo.style.display = 'block';
-                                previewBtn.disabled = false;
-                            } else {
-                                selectedInfo.style.display = 'none';
-                                previewBtn.disabled = true;
-                            }
-                        }
-                    })();
-                    </script>
                 <?php endif; ?>
             </div>
         </div>

@@ -38,6 +38,7 @@ class WPA9_Shortcode {
         }
 
         wp_enqueue_style( 'wpa9-gallery' );
+        $this->maybe_add_native_gallery_style( $atts['template'], $gallery, $atts );
 
         $images    = WPA9_Image::for_gallery( $gallery->id );
         $album     = null; // Galleries can belong to multiple albums; standalone render isn't tied to one.
@@ -63,6 +64,32 @@ class WPA9_Shortcode {
             }
         }
         return WPA9_Gallery::resolve_ratio( $gallery );
+    }
+
+    /**
+     * Default native-gallery CSS, matching gallery_shortcode() in wp-includes/media.php.
+     * Enqueued via wp_add_inline_style() instead of a <style> tag in the template.
+     */
+    private function maybe_add_native_gallery_style( $template, $gallery, $atts ) {
+        if ( 'gallery-native' !== $template || ! $gallery ) {
+            return;
+        }
+        $html5 = current_theme_supports( 'html5', 'gallery' );
+        $print = apply_filters( 'use_default_gallery_style', ! $html5 );
+        if ( ! $print ) {
+            return;
+        }
+        $columns   = isset( $atts['columns'] ) ? max( 1, (int) $atts['columns'] ) : 5;
+        $selector  = 'gallery-' . (int) $gallery->id;
+        $itemwidth = $columns > 0 ? floor( 100 / $columns ) : 100;
+        $float     = is_rtl() ? 'right' : 'left';
+        $css       = sprintf(
+            '#%1$s { margin: auto; } #%1$s .gallery-item { float: %2$s; margin-top: 10px; text-align: center; width: %3$d%%; } #%1$s img { border: 2px solid #cfcfcf; } #%1$s .gallery-caption { margin-left: 0; }',
+            $selector,
+            $float,
+            $itemwidth
+        );
+        wp_add_inline_style( 'wpa9-gallery', $css );
     }
 
     public function render_album( $atts ) {
@@ -94,6 +121,8 @@ class WPA9_Shortcode {
                 $ratio     = $this->resolve_ratio_from_atts( $atts, $gallery );
                 $data_html = WPA9_Gallery::render_data_atts_html( $gallery );
                 $back_url  = remove_query_arg( 'wpa9_gallery' );
+
+                $this->maybe_add_native_gallery_style( $atts['gallery_template'], $gallery, $atts );
 
                 $out  = '<div class="wpa9-album-drill wpa9-album-drill--' . esc_attr( $album->slug ) . '">';
                 $out .= '<p class="wpa9-album-drill__back"><a href="' . esc_url( $back_url ) . '">' . esc_html__( '← Back to album', 'wpa9-gallery' ) . '</a></p>';

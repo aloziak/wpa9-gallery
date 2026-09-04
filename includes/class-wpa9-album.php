@@ -12,17 +12,23 @@ class WPA9_Album {
 
     public static function all() {
         global $wpdb;
-        return $wpdb->get_results( "SELECT * FROM " . self::table() . " ORDER BY sort_order ASC, name ASC" );
+        return $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY sort_order ASC, name ASC', self::table() )
+        );
     }
 
     public static function get( $id ) {
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::table() . " WHERE id = %d", (int) $id ) );
+        return $wpdb->get_row(
+            $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', self::table(), (int) $id )
+        );
     }
 
     public static function get_by_slug( $slug ) {
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::table() . " WHERE slug = %s", $slug ) );
+        return $wpdb->get_row(
+            $wpdb->prepare( 'SELECT * FROM %i WHERE slug = %s', self::table(), $slug )
+        );
     }
 
     public static function insert( $data ) {
@@ -73,7 +79,8 @@ class WPA9_Album {
         global $wpdb;
         $j = $wpdb->prefix . 'wpa9_album_galleries';
         $rows = $wpdb->get_col( $wpdb->prepare(
-            "SELECT gallery_id FROM $j WHERE album_id = %d ORDER BY sort_order ASC, gallery_id ASC",
+            'SELECT gallery_id FROM %i WHERE album_id = %d ORDER BY sort_order ASC, gallery_id ASC',
+            $j,
             (int) $album_id
         ) );
         return array_map( 'intval', (array) $rows );
@@ -83,7 +90,9 @@ class WPA9_Album {
         global $wpdb;
         $j = $wpdb->prefix . 'wpa9_album_galleries';
         return (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM $j WHERE album_id = %d", (int) $album_id
+            'SELECT COUNT(*) FROM %i WHERE album_id = %d',
+            $j,
+            (int) $album_id
         ) );
     }
 
@@ -100,22 +109,34 @@ class WPA9_Album {
                 continue;
             }
             $wpdb->query( $wpdb->prepare(
-                "INSERT IGNORE INTO $j (album_id, gallery_id, sort_order) VALUES (%d, %d, %d)",
-                $album_id, $gid, $i++
+                'INSERT IGNORE INTO %i (album_id, gallery_id, sort_order) VALUES (%d, %d, %d)',
+                $j,
+                $album_id,
+                $gid,
+                $i++
             ) );
         }
         return true;
     }
 
-    public static function add_gallery( $album_id, $gallery_id ) {
+    public static function add_gallery( $album_id, $gallery_id, $sort_order = null ) {
         global $wpdb;
         $j = $wpdb->prefix . 'wpa9_album_galleries';
-        $next = 1 + (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT MAX(sort_order) FROM $j WHERE album_id = %d", (int) $album_id
-        ) );
+        if ( null === $sort_order ) {
+            $next = 1 + (int) $wpdb->get_var( $wpdb->prepare(
+                'SELECT MAX(sort_order) FROM %i WHERE album_id = %d',
+                $j,
+                (int) $album_id
+            ) );
+        } else {
+            $next = (int) $sort_order;
+        }
         return false !== $wpdb->query( $wpdb->prepare(
-            "INSERT IGNORE INTO $j (album_id, gallery_id, sort_order) VALUES (%d, %d, %d)",
-            (int) $album_id, (int) $gallery_id, $next
+            'INSERT IGNORE INTO %i (album_id, gallery_id, sort_order) VALUES (%d, %d, %d)',
+            $j,
+            (int) $album_id,
+            (int) $gallery_id,
+            $next
         ) );
     }
 
@@ -138,8 +159,10 @@ class WPA9_Album {
         $i    = 2;
         while ( true ) {
             $existing = $wpdb->get_var( $wpdb->prepare(
-                "SELECT id FROM " . self::table() . " WHERE slug = %s AND id <> %d LIMIT 1",
-                $slug, (int) $exclude_id
+                'SELECT id FROM %i WHERE slug = %s AND id <> %d LIMIT 1',
+                self::table(),
+                $slug,
+                (int) $exclude_id
             ) );
             if ( ! $existing ) {
                 return $slug;

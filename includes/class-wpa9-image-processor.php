@@ -59,10 +59,12 @@ class WPA9_Image_Processor {
      */
     private static function passthrough( $source_path, $dest_path ) {
         if ( $source_path !== $dest_path ) {
-            if ( ! @copy( $source_path, $dest_path ) ) {
+            if ( ! copy( $source_path, $dest_path ) ) {
                 return new WP_Error( 'wpa9_copy_failed', __( 'Could not copy image file.', 'wpa9-gallery' ) );
             }
-            @chmod( $dest_path, 0644 );
+            if ( file_exists( $dest_path ) ) {
+                chmod( $dest_path, 0644 );
+            }
         }
         list( $w, $h ) = self::dimensions( $dest_path );
         return array(
@@ -77,7 +79,7 @@ class WPA9_Image_Processor {
         if ( ! file_exists( $path ) ) {
             return array( 0, 0 );
         }
-        $size = @getimagesize( $path );
+        $size = getimagesize( $path );
         if ( ! $size ) {
             return array( 0, 0 );
         }

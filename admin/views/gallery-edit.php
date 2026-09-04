@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$id        = isset( $_GET['id'] ) ? (int) $_GET['id'] : 0;
+$id        = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
 $gallery   = $id ? WPA9_Gallery::get( $id ) : null;
 $is_new    = ! $gallery;
 $settings  = WPA9_Install::get_settings();
@@ -116,7 +116,7 @@ $ratios      = WPA9_Install::ratios();
                     <div class="wpa9-card">
                         <h3><?php esc_html_e( 'Embed', 'wpa9-gallery' ); ?></h3>
                         <p><?php esc_html_e( 'Use this shortcode anywhere on your site:', 'wpa9-gallery' ); ?></p>
-                        <p><input type="text" class="widefat" readonly value="[wpa9_gallery id=&quot;<?php echo (int) $gallery->id; ?>&quot;]" onclick="this.select()"></p>
+                        <p><input type="text" class="widefat wpa9-select-on-focus" readonly value="[wpa9_gallery id=&quot;<?php echo (int) $gallery->id; ?>&quot;]"></p>
                         <p class="description"><?php esc_html_e( 'Optional: template="gallery-masonry" columns="3" gap="12"', 'wpa9-gallery' ); ?></p>
                     </div>
                 <?php endif; ?>

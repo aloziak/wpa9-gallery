@@ -19,7 +19,7 @@ $tables = array(
 );
 
 foreach ( $tables as $t ) {
-    $wpdb->query( "DROP TABLE IF EXISTS $t" );
+    $wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $t ) );
 }
 
 delete_option( 'wpa9_db_version' );

@@ -2,10 +2,9 @@
 /**
  * WPA9 Gallery — "Native WP" template
  *
- * Emits the exact HTML structure (and the same conditional inline <style>)
- * that core's gallery_shortcode() produces. Any theme that already styles
- * native WP galleries — including default themes — will style this one with
- * zero changes.
+ * Emits the exact HTML structure that core's gallery_shortcode() produces.
+ * Default gallery CSS is added via wp_add_inline_style( 'wpa9-gallery' ) in
+ * WPA9_Shortcode (not a <style> tag), matching core's use_default_gallery_style filter.
  *
  * Shortcode usage:
  *   [wpa9_gallery id="1" template="gallery-native" columns="3" size="thumbnail" link="file"]
@@ -29,37 +28,6 @@ $icontag    = $html5 ? 'div'        : 'dt';
 $captiontag = $html5 ? 'figcaption' : 'dd';
 
 $selector   = 'gallery-' . (int) $gallery->id;
-$itemwidth  = $columns > 0 ? floor( 100 / $columns ) : 100;
-$float      = is_rtl() ? 'right' : 'left';
-
-/**
- * Same filter core uses; defaults to true on legacy themes and false on HTML5
- * themes (matching wp-includes/media.php behavior).
- */
-$print_default_style = apply_filters( 'use_default_gallery_style', ! $html5 );
-
-if ( $print_default_style ) {
-    $type_attr = current_theme_supports( 'html5', 'style' ) ? '' : ' type="text/css"';
-    echo "
-    <style{$type_attr}>
-        #{$selector} {
-            margin: auto;
-        }
-        #{$selector} .gallery-item {
-            float: {$float};
-            margin-top: 10px;
-            text-align: center;
-            width: {$itemwidth}%;
-        }
-        #{$selector} img {
-            border: 2px solid #cfcfcf;
-        }
-        #{$selector} .gallery-caption {
-            margin-left: 0;
-        }
-        /* see gallery_shortcode() in wp-includes/media.php */
-    </style>\n";
-}
 
 $classes = sprintf(
     'gallery galleryid-%d gallery-columns-%d gallery-size-%s',

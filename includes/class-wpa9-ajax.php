@@ -28,7 +28,7 @@ class WPA9_Ajax {
     public function upload() {
         $this->require_caps_and_nonce();
 
-        $gallery_id = isset( $_POST['gallery_id'] ) ? (int) $_POST['gallery_id'] : 0;
+        $gallery_id = isset( $_POST['gallery_id'] ) ? absint( $_POST['gallery_id'] ) : 0;
         $gallery    = WPA9_Gallery::get( $gallery_id );
         if ( ! $gallery ) {
             wp_send_json_error( array( 'message' => __( 'Gallery not found.', 'wpa9-gallery' ) ), 404 );
@@ -43,14 +43,15 @@ class WPA9_Ajax {
             wp_send_json_error( array( 'message' => sprintf( __( 'Upload error (%d).', 'wpa9-gallery' ), (int) $file['error'] ) ), 400 );
         }
 
-        $filetype = wp_check_filetype( $file['name'] );
-        if ( empty( $filetype['type'] ) || strpos( $filetype['type'], 'image/' ) !== 0 ) {
+        $filename_raw = isset( $file['name'] ) ? sanitize_file_name( wp_unslash( $file['name'] ) ) : '';
+        $checked      = wp_check_filetype_and_ext( $file['tmp_name'], $filename_raw );
+        if ( empty( $checked['type'] ) || strpos( $checked['type'], 'image/' ) !== 0 ) {
             wp_send_json_error( array( 'message' => __( 'Only image files are allowed.', 'wpa9-gallery' ) ), 400 );
         }
 
         WPA9_Storage::create_gallery_dir( $gallery->slug );
         $target_dir = WPA9_Storage::gallery_dir( $gallery->slug );
-        $filename   = WPA9_Storage::unique_filename( $gallery->slug, $file['name'] );
+        $filename   = WPA9_Storage::unique_filename( $gallery->slug, $filename_raw );
         $target     = trailingslashit( $target_dir ) . $filename;
 
         if ( ! is_uploaded_file( $file['tmp_name'] ) ) {
@@ -74,12 +75,13 @@ class WPA9_Ajax {
                 500
             );
         }
-        // Remove the temporary uploaded file if it still exists.
         if ( file_exists( $file['tmp_name'] ) ) {
-            @unlink( $file['tmp_name'] );
+            wp_delete_file( $file['tmp_name'] );
         }
 
-        @chmod( $target, 0644 );
+        if ( file_exists( $target ) ) {
+            chmod( $target, 0644 );
+        }
 
         $settings = WPA9_Install::get_settings();
         $quality  = (int) $settings['jpeg_quality'];
@@ -132,9 +134,9 @@ class WPA9_Ajax {
 
     public function reorder() {
         $this->require_caps_and_nonce();
-        $gallery_id = isset( $_POST['gallery_id'] ) ? (int) $_POST['gallery_id'] : 0;
-        $ids_raw    = isset( $_POST['ids'] ) ? (array) $_POST['ids'] : array();
-        $ids        = array_map( 'intval', $ids_raw );
+        $gallery_id = isset( $_POST['gallery_id'] ) ? absint( $_POST['gallery_id'] ) : 0;
+        $ids_raw    = isset( $_POST['ids'] ) ? wp_unslash( (array) $_POST['ids'] ) : array();
+        $ids        = array_map( 'absint', $ids_raw );
         if ( ! $gallery_id || empty( $ids ) ) {
             wp_send_json_error( array( 'message' => __( 'Nothing to reorder.', 'wpa9-gallery' ) ), 400 );
         }
@@ -144,7 +146,7 @@ class WPA9_Ajax {
 
     public function delete_image() {
         $this->require_caps_and_nonce();
-        $id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+        $id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
         if ( ! $id ) {
             wp_send_json_error( array( 'message' => __( 'Bad request.', 'wpa9-gallery' ) ), 400 );
         }
@@ -154,8 +156,8 @@ class WPA9_Ajax {
 
     public function bulk_delete() {
         $this->require_caps_and_nonce();
-        $ids_raw = isset( $_POST['ids'] ) ? (array) $_POST['ids'] : array();
-        $ids     = array_map( 'intval', $ids_raw );
+        $ids_raw = isset( $_POST['ids'] ) ? wp_unslash( (array) $_POST['ids'] ) : array();
+        $ids     = array_map( 'absint', $ids_raw );
         if ( empty( $ids ) ) {
             wp_send_json_error( array( 'message' => __( 'No images selected.', 'wpa9-gallery' ) ), 400 );
         }
@@ -165,14 +167,14 @@ class WPA9_Ajax {
 
     public function save_meta() {
         $this->require_caps_and_nonce();
-        $id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+        $id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
         if ( ! $id ) {
             wp_send_json_error( array( 'message' => __( 'Bad request.', 'wpa9-gallery' ) ), 400 );
         }
         $data = array(
-            'caption'     => isset( $_POST['caption'] ) ? wp_unslash( $_POST['caption'] ) : '',
-            'description' => isset( $_POST['description'] ) ? wp_unslash( $_POST['description'] ) : '',
-            'alt_text'    => isset( $_POST['alt_text'] ) ? wp_unslash( $_POST['alt_text'] ) : '',
+            'caption'     => isset( $_POST['caption'] )     ? sanitize_text_field( wp_unslash( $_POST['caption'] ) ) : '',
+            'description' => isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '',
+            'alt_text'    => isset( $_POST['alt_text'] )    ? sanitize_text_field( wp_unslash( $_POST['alt_text'] ) ) : '',
         );
         WPA9_Image::update_meta( $id, $data );
         wp_send_json_success();
@@ -180,19 +182,19 @@ class WPA9_Ajax {
 
     public function album_set_galleries() {
         $this->require_caps_and_nonce();
-        $album_id = isset( $_POST['album_id'] ) ? (int) $_POST['album_id'] : 0;
+        $album_id = isset( $_POST['album_id'] ) ? absint( $_POST['album_id'] ) : 0;
         if ( ! $album_id || ! WPA9_Album::get( $album_id ) ) {
             wp_send_json_error( array( 'message' => __( 'Album not found.', 'wpa9-gallery' ) ), 404 );
         }
-        $ids_raw = isset( $_POST['gallery_ids'] ) ? (array) $_POST['gallery_ids'] : array();
-        $ids     = array_values( array_unique( array_map( 'intval', $ids_raw ) ) );
+        $ids_raw = isset( $_POST['gallery_ids'] ) ? wp_unslash( (array) $_POST['gallery_ids'] ) : array();
+        $ids     = array_values( array_unique( array_map( 'absint', $ids_raw ) ) );
         WPA9_Album::set_gallery_ids( $album_id, $ids );
         wp_send_json_success( array( 'count' => count( $ids ) ) );
     }
 
     public function regen_thumb() {
         $this->require_caps_and_nonce();
-        $id    = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+        $id    = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
         $image = WPA9_Image::get( $id );
         if ( ! $image ) {
             wp_send_json_error( array( 'message' => __( 'Image not found.', 'wpa9-gallery' ) ), 404 );
@@ -211,7 +213,7 @@ class WPA9_Ajax {
 
         // Delete the old thumbnail before rebuilding it at the gallery's current thumb size.
         if ( file_exists( $dest ) ) {
-            @unlink( $dest );
+            wp_delete_file( $dest );
         }
 
         $res = WPA9_Image_Processor::resize_to_fit(

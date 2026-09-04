@@ -24,7 +24,7 @@ class WPA9_Admin {
             self::DASHBOARD_SLUG,
             array( $this, 'page_dashboard' ),
             'dashicons-format-gallery',
-            25
+            58
         );
         add_submenu_page( self::DASHBOARD_SLUG, __( 'Dashboard', 'wpa9-gallery' ), __( 'Dashboard', 'wpa9-gallery' ), self::CAP, self::DASHBOARD_SLUG, array( $this, 'page_dashboard' ) );
         add_submenu_page( self::DASHBOARD_SLUG, __( 'Galleries', 'wpa9-gallery' ),   __( 'Galleries', 'wpa9-gallery' ),   self::CAP, self::MENU_SLUG, array( $this, 'page_galleries' ) );
@@ -37,7 +37,7 @@ class WPA9_Admin {
     }
 
     private function current_page() {
-        return isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
+        return isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
     }
 
     private function is_plugin_page() {
@@ -56,10 +56,20 @@ class WPA9_Admin {
         wp_enqueue_style( 'wpa9-admin', WPA9_URL . 'admin/css/admin.css', array(), WPA9_VERSION );
         wp_enqueue_script( 'wpa9-admin', WPA9_URL . 'admin/js/admin.js', array( 'jquery', 'plupload-all', 'jquery-ui-sortable' ), WPA9_VERSION, true );
 
+        if ( 'wpa9-export-import' === $this->current_page() ) {
+            wp_enqueue_script(
+                'wpa9-export-import',
+                WPA9_URL . 'admin/js/export-import.js',
+                array(),
+                WPA9_VERSION,
+                true
+            );
+        }
+
         wp_localize_script( 'wpa9-admin', 'WPA9', array(
             'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
             'nonce'     => wp_create_nonce( 'wpa9_admin' ),
-            'galleryId' => isset( $_GET['id'] ) ? (int) $_GET['id'] : 0,
+            'galleryId' => isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0,
             'maxUploadSize' => wp_max_upload_size(),
             'i18n'      => array(
                 'confirmDeleteImage'    => __( 'Delete this image? This cannot be undone.', 'wpa9-gallery' ),
@@ -86,15 +96,37 @@ class WPA9_Admin {
         if ( ! $this->is_plugin_page() ) {
             return;
         }
-        if ( isset( $_GET['wpa9_notice'] ) ) {
-            $type = isset( $_GET['wpa9_type'] ) && in_array( $_GET['wpa9_type'], array( 'success', 'error', 'warning' ), true ) ? $_GET['wpa9_type'] : 'success';
-            echo '<div class="notice notice-' . esc_attr( $type ) . ' is-dismissible"><p>' . esc_html( wp_unslash( $_GET['wpa9_notice'] ) ) . '</p></div>';
+        $stored = get_transient( 'wpa9_notice_' . get_current_user_id() );
+        if ( ! is_array( $stored ) || empty( $stored['message'] ) ) {
+            return;
         }
+        delete_transient( 'wpa9_notice_' . get_current_user_id() );
+
+        $allowed_types = array( 'success', 'error', 'warning' );
+        $type          = isset( $stored['type'] ) ? sanitize_key( $stored['type'] ) : 'success';
+        if ( ! in_array( $type, $allowed_types, true ) ) {
+            $type = 'success';
+        }
+        $notice = sanitize_text_field( $stored['message'] );
+        if ( $notice === '' ) {
+            return;
+        }
+        printf(
+            '<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+            esc_attr( $type ),
+            esc_html( $notice )
+        );
     }
 
     private function redirect_with_notice( $args, $message, $type = 'success' ) {
-        $args['wpa9_notice'] = $message;
-        $args['wpa9_type']   = $type;
+        set_transient(
+            'wpa9_notice_' . get_current_user_id(),
+            array(
+                'message' => $message,
+                'type'    => $type,
+            ),
+            30
+        );
         wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
         exit;
     }
@@ -106,24 +138,24 @@ class WPA9_Admin {
         if ( ! isset( $_POST['wpa9_action'] ) ) {
             return;
         }
-        $action = sanitize_key( $_POST['wpa9_action'] );
+        $action = sanitize_key( wp_unslash( $_POST['wpa9_action'] ) );
         check_admin_referer( 'wpa9_' . $action );
 
         switch ( $action ) {
 
             case 'save_gallery':
-                $id   = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+                $id   = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
                 $data = array(
-                    'name'            => isset( $_POST['name'] ) ? wp_unslash( $_POST['name'] ) : '',
-                    'description'     => isset( $_POST['description'] ) ? wp_unslash( $_POST['description'] ) : '',
-                    'author_name'     => isset( $_POST['author_name'] ) ? wp_unslash( $_POST['author_name'] ) : '',
-                    'fullsize_width'  => isset( $_POST['fullsize_width'] ) ? (int) $_POST['fullsize_width'] : 2560,
-                    'fullsize_height' => isset( $_POST['fullsize_height'] ) ? (int) $_POST['fullsize_height'] : 2560,
-                    'thumb_width'     => isset( $_POST['thumb_width'] ) ? (int) $_POST['thumb_width'] : 576,
-                    'thumb_height'    => isset( $_POST['thumb_height'] ) ? (int) $_POST['thumb_height'] : 576,
-                    'ratio'           => isset( $_POST['ratio'] ) ? wp_unslash( $_POST['ratio'] ) : '',
-                    'data_atts'       => isset( $_POST['data_atts'] ) ? wp_unslash( $_POST['data_atts'] ) : '',
-                    'sort_order'      => isset( $_POST['sort_order'] ) ? (int) $_POST['sort_order'] : 0,
+                    'name'            => isset( $_POST['name'] )            ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+                    'description'     => isset( $_POST['description'] )     ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '',
+                    'author_name'     => isset( $_POST['author_name'] )     ? sanitize_text_field( wp_unslash( $_POST['author_name'] ) ) : '',
+                    'fullsize_width'  => isset( $_POST['fullsize_width'] )  ? absint( $_POST['fullsize_width'] ) : 2560,
+                    'fullsize_height' => isset( $_POST['fullsize_height'] ) ? absint( $_POST['fullsize_height'] ) : 2560,
+                    'thumb_width'     => isset( $_POST['thumb_width'] )     ? absint( $_POST['thumb_width'] ) : 576,
+                    'thumb_height'    => isset( $_POST['thumb_height'] )    ? absint( $_POST['thumb_height'] ) : 576,
+                    'ratio'           => isset( $_POST['ratio'] )           ? WPA9_Gallery::sanitize_ratio( sanitize_key( wp_unslash( $_POST['ratio'] ) ) ) : '',
+                    'data_atts'       => isset( $_POST['data_atts'] )       ? sanitize_textarea_field( wp_unslash( $_POST['data_atts'] ) ) : '',
+                    'sort_order'      => isset( $_POST['sort_order'] )      ? intval( wp_unslash( $_POST['sort_order'] ) ) : 0,
                 );
                 if ( $id > 0 ) {
                     $res = WPA9_Gallery::update( $id, $data );
@@ -141,7 +173,7 @@ class WPA9_Admin {
                 break;
 
             case 'delete_gallery':
-                $id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+                $id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
                 if ( $id ) {
                     WPA9_Gallery::delete( $id );
                 }
@@ -149,11 +181,11 @@ class WPA9_Admin {
                 break;
 
             case 'save_album':
-                $id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+                $id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
                 $data = array(
-                    'name'        => isset( $_POST['name'] ) ? wp_unslash( $_POST['name'] ) : '',
-                    'description' => isset( $_POST['description'] ) ? wp_unslash( $_POST['description'] ) : '',
-                    'sort_order'  => isset( $_POST['sort_order'] ) ? (int) $_POST['sort_order'] : 0,
+                    'name'        => isset( $_POST['name'] )        ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+                    'description' => isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '',
+                    'sort_order'  => isset( $_POST['sort_order'] )  ? intval( wp_unslash( $_POST['sort_order'] ) ) : 0,
                 );
                 if ( $id > 0 ) {
                     WPA9_Album::update( $id, $data );
@@ -168,7 +200,7 @@ class WPA9_Admin {
                 break;
 
             case 'delete_album':
-                $id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
+                $id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
                 if ( $id ) {
                     WPA9_Album::delete( $id );
                 }
@@ -182,13 +214,13 @@ class WPA9_Admin {
                     $ratio_in = 'none';
                 }
                 $opts = array(
-                    'fullsize_width'  => max( 0, (int) $_POST['fullsize_width'] ),
-                    'fullsize_height' => max( 0, (int) $_POST['fullsize_height'] ),
-                    'thumb_width'     => max( 0, (int) $_POST['thumb_width'] ),
-                    'thumb_height'    => max( 0, (int) $_POST['thumb_height'] ),
+                    'fullsize_width'  => isset( $_POST['fullsize_width'] )  ? absint( $_POST['fullsize_width'] ) : 0,
+                    'fullsize_height' => isset( $_POST['fullsize_height'] ) ? absint( $_POST['fullsize_height'] ) : 0,
+                    'thumb_width'     => isset( $_POST['thumb_width'] )     ? absint( $_POST['thumb_width'] ) : 0,
+                    'thumb_height'    => isset( $_POST['thumb_height'] )    ? absint( $_POST['thumb_height'] ) : 0,
                     'ratio'           => $ratio_in,
-                    'jpeg_quality'    => min( 100, max( 10, (int) $_POST['jpeg_quality'] ) ),
-                    'data_atts'       => isset( $_POST['data_atts'] ) ? sanitize_textarea_field( wp_unslash( $_POST['data_atts'] ) ) : '',
+                    'jpeg_quality'    => isset( $_POST['jpeg_quality'] )    ? min( 100, max( 10, absint( $_POST['jpeg_quality'] ) ) ) : 85,
+                    'data_atts'       => isset( $_POST['data_atts'] )       ? sanitize_textarea_field( wp_unslash( $_POST['data_atts'] ) ) : '',
                 );
                 update_option( WPA9_Install::OPT_SETTINGS, $opts );
                 $this->redirect_with_notice( array( 'page' => 'wpa9-settings' ), __( 'Settings saved.', 'wpa9-gallery' ) );
@@ -216,23 +248,31 @@ class WPA9_Admin {
             case 'export_wpa9':
                 $export_data = WPA9_Exporter::export_all();
                 $json = WPA9_Exporter::to_json( $export_data );
+                nocache_headers();
                 header( 'Content-Type: application/json; charset=utf-8' );
                 header( 'Content-Disposition: attachment; filename="wpa9-gallery-export-' . current_time( 'Y-m-d-His' ) . '.json"' );
                 header( 'Content-Length: ' . strlen( $json ) );
-                echo $json;
+                echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download generated by wp_json_encode.
                 exit;
-                break;
 
             case 'import_wpa9':
                 if ( ! isset( $_FILES['import_file'] ) ) {
                     $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'No file provided.', 'wpa9-gallery' ), 'error' );
                 }
                 $file = $_FILES['import_file'];
-                if ( $file['error'] !== UPLOAD_ERR_OK ) {
+                if ( ! isset( $file['tmp_name'] ) || ! is_uploaded_file( $file['tmp_name'] ) ) {
+                    $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'Invalid uploaded file.', 'wpa9-gallery' ), 'error' );
+                }
+                if ( isset( $file['error'] ) && (int) $file['error'] !== UPLOAD_ERR_OK ) {
                     $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'File upload error.', 'wpa9-gallery' ), 'error' );
                 }
-                if ( $file['size'] > 10 * MB_IN_BYTES ) {
+                if ( isset( $file['size'] ) && (int) $file['size'] > 10 * MB_IN_BYTES ) {
                     $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'File too large (max 10 MB).', 'wpa9-gallery' ), 'error' );
+                }
+                $name = isset( $file['name'] ) ? sanitize_file_name( wp_unslash( $file['name'] ) ) : '';
+                $ext  = strtolower( pathinfo( $name, PATHINFO_EXTENSION ) );
+                if ( 'json' !== $ext ) {
+                    $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'Please upload a JSON file.', 'wpa9-gallery' ), 'error' );
                 }
                 $json = file_get_contents( $file['tmp_name'] );
                 $validation = WPA9_Importer::validate_import_file( $json );
@@ -251,7 +291,8 @@ class WPA9_Admin {
                 if ( ! isset( $_POST['pending_import'] ) || ! isset( $_POST['confirm_import'] ) ) {
                     $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'Invalid request.', 'wpa9-gallery' ), 'error' );
                 }
-                $transient_key = 'wpa9_pending_import_' . sanitize_key( $_POST['pending_import'] );
+                $pending_key   = sanitize_text_field( wp_unslash( $_POST['pending_import'] ) );
+                $transient_key = 'wpa9_pending_import_' . sanitize_key( $pending_key );
                 $json = get_transient( $transient_key );
                 if ( ! $json ) {
                     $this->redirect_with_notice( array( 'page' => 'wpa9-export-import' ), __( 'Import session expired. Please upload the file again.', 'wpa9-gallery' ), 'error' );

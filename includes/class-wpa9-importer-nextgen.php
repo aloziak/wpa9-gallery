@@ -43,11 +43,11 @@ class WPA9_Importer_NextGEN {
         if ( ! self::is_available() ) {
             return $out;
         }
-        $out['galleries'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t['gallery']}" );
-        $out['pictures']  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t['pictures']}" );
+        $out['galleries'] = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $t['gallery'] ) );
+        $out['pictures']  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $t['pictures'] ) );
         $alb_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $t['album'] ) ) === $t['album'];
         if ( $alb_exists ) {
-            $out['albums'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t['album']}" );
+            $out['albums'] = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $t['album'] ) );
         }
         return $out;
     }
@@ -63,7 +63,9 @@ class WPA9_Importer_NextGEN {
             return new WP_Error( 'wpa9_no_nextgen', __( 'NextGEN Gallery tables not found.', 'wpa9-gallery' ) );
         }
 
-        @set_time_limit( 300 );
+        if ( function_exists( 'set_time_limit' ) ) {
+            set_time_limit( 300 );
+        }
         if ( function_exists( 'wp_raise_memory_limit' ) ) {
             wp_raise_memory_limit( 'admin' );
         }
@@ -79,7 +81,9 @@ class WPA9_Importer_NextGEN {
 
         // ---------- 1) Galleries ----------
         $gallery_id_map = array(); // ngg gid => wpa9 id
-        $ngg_galleries  = $wpdb->get_results( "SELECT * FROM {$t['gallery']} ORDER BY gid ASC" );
+        $ngg_galleries  = $wpdb->get_results(
+            $wpdb->prepare( 'SELECT * FROM %i ORDER BY gid ASC', $t['gallery'] )
+        );
 
         foreach ( $ngg_galleries as $ngg ) {
             $name = '';
@@ -130,10 +134,13 @@ class WPA9_Importer_NextGEN {
 
         // ---------- 2) Pictures ----------
         if ( ! empty( $gallery_id_map ) ) {
-            $gids   = array_keys( $gallery_id_map );
-            $in     = implode( ',', array_map( 'intval', $gids ) );
-            $rows   = $wpdb->get_results(
-                "SELECT * FROM {$t['pictures']} WHERE galleryid IN ($in) ORDER BY galleryid ASC, sortorder ASC, pid ASC"
+            $gids         = array_map( 'intval', array_keys( $gallery_id_map ) );
+            $placeholders = implode( ',', array_fill( 0, count( $gids ), '%d' ) );
+            $rows         = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM %i WHERE galleryid IN ($placeholders) ORDER BY galleryid ASC, sortorder ASC, pid ASC",
+                    array_merge( array( $t['pictures'] ), $gids )
+                )
             );
 
             foreach ( $rows as $p ) {
@@ -173,7 +180,9 @@ class WPA9_Importer_NextGEN {
         // ---------- 3) Albums ----------
         $alb_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $t['album'] ) ) === $t['album'];
         if ( $alb_exists ) {
-            $ngg_albums = $wpdb->get_results( "SELECT * FROM {$t['album']} ORDER BY id ASC" );
+            $ngg_albums = $wpdb->get_results(
+                $wpdb->prepare( 'SELECT * FROM %i ORDER BY id ASC', $t['album'] )
+            );
             foreach ( $ngg_albums as $a ) {
                 $name = ! empty( $a->name ) ? (string) $a->name : sprintf( __( 'NextGEN Album #%d', 'wpa9-gallery' ), (int) $a->id );
 

@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WPA9_Install {
 
-    const DB_VERSION = '1.4.0';
+    const DB_VERSION = '1.4.1';
 
     /** Allowed ratio tokens. Empty string = inherit (on galleries); 'none' = original ratio. */
     public static function ratios() {
@@ -28,11 +28,10 @@ class WPA9_Install {
         self::ensure_base_dir();
         self::seed_defaults();
         update_option( self::OPT_DB_VERSION, self::DB_VERSION );
-        flush_rewrite_rules();
     }
 
     public static function deactivate() {
-        flush_rewrite_rules();
+        // Intentionally empty: this plugin does not register rewrite rules.
     }
 
     public static function maybe_upgrade() {
@@ -62,15 +61,21 @@ class WPA9_Install {
         ) );
         if ( $has_album_id === 'album_id' ) {
             $rows = $wpdb->get_results(
-                "SELECT id, album_id FROM {$galleries_t} WHERE album_id IS NOT NULL AND album_id > 0"
+                $wpdb->prepare(
+                    'SELECT id, album_id FROM %i WHERE album_id IS NOT NULL AND album_id > 0',
+                    $galleries_t
+                )
             );
             foreach ( $rows as $r ) {
                 $wpdb->query( $wpdb->prepare(
-                    "INSERT IGNORE INTO {$junction_t} (album_id, gallery_id, sort_order) VALUES (%d, %d, %d)",
-                    (int) $r->album_id, (int) $r->id, 0
+                    'INSERT IGNORE INTO %i (album_id, gallery_id, sort_order) VALUES (%d, %d, %d)',
+                    $junction_t,
+                    (int) $r->album_id,
+                    (int) $r->id,
+                    0
                 ) );
             }
-            $wpdb->query( "ALTER TABLE {$galleries_t} DROP COLUMN album_id" );
+            $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i DROP COLUMN album_id', $galleries_t ) );
         }
 
         // 1.4.0: rename existing thumb files to 'thumbs_' prefix (NextGEN-compatible).
@@ -82,7 +87,7 @@ class WPA9_Install {
         if ( ! is_dir( $base ) ) {
             return;
         }
-        $gallery_dirs = @scandir( $base );
+        $gallery_dirs = scandir( $base );
         if ( ! is_array( $gallery_dirs ) ) {
             return;
         }
@@ -94,12 +99,12 @@ class WPA9_Install {
             if ( ! is_dir( $thumbs ) ) {
                 continue;
             }
-            $files = @scandir( $thumbs );
+            $files = scandir( $thumbs );
             if ( ! is_array( $files ) ) {
                 continue;
             }
             foreach ( $files as $f ) {
-                if ( $f === '.' || $f === '..' || $f === 'index.php' ) {
+                if ( $f === '.' || $f === '..' || $f === 'index.php' || $f === 'index.html' ) {
                     continue;
                 }
                 if ( strpos( $f, 'thumbs_' ) === 0 ) {
@@ -108,7 +113,7 @@ class WPA9_Install {
                 $old = trailingslashit( $thumbs ) . $f;
                 $new = trailingslashit( $thumbs ) . 'thumbs_' . $f;
                 if ( is_file( $old ) && ! file_exists( $new ) ) {
-                    @rename( $old, $new );
+                    rename( $old, $new );
                 }
             }
         }
@@ -213,9 +218,6 @@ class WPA9_Install {
         if ( ! file_exists( $base ) ) {
             wp_mkdir_p( $base );
         }
-        $index = trailingslashit( $base ) . 'index.php';
-        if ( ! file_exists( $index ) ) {
-            @file_put_contents( $index, "<?php // Silence is golden.\n" );
-        }
+        WPA9_Storage::protect_all_dirs();
     }
 }

@@ -44,7 +44,9 @@ class WPA9_Importer {
             return new WP_Error( 'decode_failed', __( 'Failed to decode import file.', 'wpa9-gallery' ) );
         }
 
-        set_time_limit( 300 );
+        if ( function_exists( 'set_time_limit' ) ) {
+            set_time_limit( 300 );
+        }
         wp_raise_memory_limit( 'import' );
 
         $result = array(
